@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>AI Hyper</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#12141a" />
+<style>
+  :root{
+    --bg:#0e0f13;
+    --panel:#15171e;
+    --panel-2:#1b1e27;
+    --border:#262a35;
+    --text:#e9eaee;
+    --muted:#8d90a0;
+    --local:#5eead4;      /* accent: jalur lokal */
+    --local-dim:#5eead422;
+    --cloud:#f5b95b;      /* accent: jalur cloud */
+    --cloud-dim:#f5b95b22;
+    --hybrid:#a78bfa;     /* accent: jalur hybrid */
+    --hybrid-dim:#a78bfa22;
+    --danger:#f0685c;
+    --radius:14px;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+    --sans: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  [data-theme="light"]{
+    --bg:#f5f5f2; --panel:#ffffff; --panel-2:#f0f0ee; --border:#e2e2df; --text:#191a1e; --muted:#6b6d78;
+  }
+  [data-theme="midnight-blue"]{
+    --bg:#070b18; --panel:#0d1428; --panel-2:#111a34; --border:#1e2a4d; --text:#eaf0ff; --muted:#7d8ab0;
+  }
+  [data-theme="graphite"]{
+    --bg:#1a1a1c; --panel:#222224; --panel-2:#2a2a2d; --border:#38383c; --text:#f0f0ef; --muted:#9b9b9f;
+  }
+  [data-theme="ink"]{
+    --bg:#000000; --panel:#0a0a0c; --panel-2:#141417; --border:#232327; --text:#f2f2f4; --muted:#87878f;
+  }
+  [data-theme="sunset"]{
+    --bg:#1b1210; --panel:#241815; --panel-2:#2d1e19; --border:#42291f; --text:#fbe9e0; --muted:#b6897a;
+    --cloud:#ff8a5c; --cloud-dim:#ff8a5c22;
+  }
+  [data-theme="paper"]{
+    --bg:#efe9dc; --panel:#f8f4ea; --panel-2:#eee6d3; --border:#ddd2b8; --text:#241f16; --muted:#7a7160;
+  }
+  [data-theme="violet"]{
+    --bg:#120f1c; --panel:#1a1628; --panel-2:#221c34; --border:#332a4c; --text:#efeaff; --muted:#948bc0;
+    --hybrid:#c4a6ff; --hybrid-dim:#c4a6ff22;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--sans);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;}
+  #app{display:flex; height:100vh; width:100vw;}
+
+  /* ---------- ICON RAIL ---------- */
+  #rail{
+    width:64px; flex:0 0 auto; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; padding:14px 0; gap:6px;
+  }
+  .rail-btn{
+    width:42px; height:42px; border-radius:12px; border:none; background:transparent; color:var(--muted);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.15s;
+  }
+  .rail-btn:hover{background:var(--panel-2); color:var(--text);}
+  .rail-btn.active{background:var(--local-dim); color:var(--local);}
+  .rail-spacer{flex:1;}
+  .rail-btn svg{width:20px; height:20px;}
+
+  /* ---------- SIDEBAR ---------- */
+  #sidebar{
+    width:280px; flex:0 0 auto; background:var(--panel); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; transition:margin-left .18s ease; overflow:hidden;
+  }
+  #sidebar.collapsed{margin-left:-280px;}
+  .sb-head{padding:16px; border-bottom:1px solid var(--border);}
+  .sb-title{font-weight:700; font-size:15px; letter-spacing:.2px;}
+  .sb-sub{font-size:11px; color:var(--muted); font-family:var(--mono); margin-top:2px;}
+  .sb-newchat{
+    margin:12px 16px 4px; padding:10px 12px; border-radius:10px; border:1px dashed var(--border);
+    background:transparent; color:var(--text); cursor:pointer; text-align:left; font-size:13px; display:flex; gap:8px; align-items:center;
+  }
+  .sb-newchat:hover{border-color:var(--local); color:var(--local);}
+  .sb-section-label{padding:14px 16px 6px; font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); font-family:var(--mono);}
+  .sb-list{overflow-y:auto; flex:1; padding-bottom:8px;}
+  .sb-item{
+    margin:2px 10px; padding:9px 10px; border-radius:9px; font-size:13px; cursor:pointer; color:var(--text);
+    display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .sb-item:hover{background:var(--panel-2);}
+  .sb-item.active{background:var(--hybrid-dim); color:var(--hybrid);}
+  .sb-item .dot{width:6px; height:6px; border-radius:50%; flex:0 0 auto;}
+  .sb-foot{border-top:1px solid var(--border); padding:10px; display:flex; align-items:center; gap:10px; cursor:pointer;}
+  .avatar{width:32px; height:32px; border-radius:50%; background:var(--panel-2); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--muted); flex:0 0 auto;}
+  .sb-foot-txt{flex:1; overflow:hidden;}
+  .sb-foot-name{font-size:12.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .sb-foot-vip{font-size:10.5px; font-family:var(--mono); color:var(--muted);}
+
+  /* ---------- MAIN ---------- */
+  #main{flex:1; display:flex; flex-direction:column; min-width:0;}
+  #topbar{
+    height:56px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; padding:0 16px; flex:0 0 auto;
+  }
+  .icon-btn{
+    width:34px; height:34px; border-radius:9px; border:none; background:transparent; color:var(--muted); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--panel-2); color:var(--text);}
+  .icon-btn svg{width:18px; height:18px;}
+  .space-name{font-weight:700; font-size:14px;}
+  .pill{
+    font-family:var(--mono); font-size:11px; padding:4px 9px; border-radius:100px; border:1px solid var(--border);
+    display:flex; align-items:center; gap:5px; white-space:nowrap;
+  }
+  .pill .dot{width:6px; height:6px; border-radius:50%;}
+  .pill.local{color:var(--local); border-color:var(--local); background:var(--local-dim);}
+  .pill.cloud{color:var(--cloud); border-color:var(--cloud); background:var(--cloud-dim);}
+  .pill.hybrid{color:var(--hybrid); border-color:var(--hybrid); background:var(--hybrid-dim);}
+  .pill.off{color:var(--muted); border-color:var(--border);}
+  .topbar-spacer{flex:1;}
+  .route-toggle{display:flex; background:var(--panel-2); border-radius:9px; padding:2px; gap:2px; font-family:var(--mono); font-size:11px;}
+  .route-toggle button{border:none; background:transparent; color:var(--muted); padding:6px 9px; border-radius:7px; cursor:pointer;}
+  .route-toggle button.active{background:var(--panel); color:var(--text);}
+  .vip-badge{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--border); padding:5px 9px; border-radius:100px;}
+  .vip-badge.vip{color:var(--cloud); border-color:var(--cloud);}
+
+  /* ---------- CHAT ---------- */
+  #chat{flex:1; overflow-y:auto; padding:22px 0;}
+  .chat-inner{max-width:760px; margin:0 auto; padding:0 20px; display:flex; flex-direction:column; gap:18px;}
+  .msg{display:flex; gap:12px; max-width:100%;}
+  .msg.user{flex-direction:row-reverse;}
+  .msg .bubble-wrap{max-width:78%; display:flex; flex-direction:column; gap:6px;}
+  .msg.user .bubble-wrap{align-items:flex-end;}
+  .bubble{
+    padding:11px 14px; border-radius:14px; font-size:14.5px; line-height:1.55; white-space:pre-wrap; word-wrap:break-word;
+  }
+  .msg.user .bubble{background:var(--panel-2); border:1px solid var(--border);}
+  .msg.ai .bubble{background:var(--panel); border:1px solid var(--border);}
+  .avatar.ai{background:var(--hybrid-dim); color:var(--hybrid);}
+  .avatar.user{background:var(--local-dim); color:var(--local);}
+  .msg-meta{font-family:var(--mono); font-size:10.5px; color:var(--muted); display:flex; gap:8px; align-items:center;}
+
+  .discussion{
+    border:1px solid var(--border); border-radius:12px; background:var(--panel-2); padding:10px 12px; margin-bottom:2px;
+  }
+  .discussion summary{cursor:pointer; font-size:12px; font-family:var(--mono); color:var(--muted); list-style:none; display:flex; align-items:center; gap:6px;}
+  .discussion summary::-webkit-details-marker{display:none;}
+  .agent-turn{margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);}
+  .agent-turn:first-of-type{border-top:none; margin-top:8px; padding-top:0;}
+  .agent-name{font-size:11.5px; font-weight:700; margin-bottom:3px;}
+  .agent-text{font-size:13px; color:var(--muted); line-height:1.5;}
+
+  .empty-state{margin:auto; text-align:center; color:var(--muted); max-width:420px;}
+  .empty-state h2{color:var(--text); font-size:19px; margin-bottom:6px;}
+  .empty-state p{font-size:13.5px; line-height:1.6;}
+
+  /* ---------- COMPOSER ---------- */
+  #composer-wrap{padding:14px 20px 18px; flex:0 0 auto;}
+  #composer{
+    max-width:760px; margin:0 auto; background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:8px 8px 8px 14px;
+    display:flex; align-items:flex-end; gap:8px;
+  }
+  #composer textarea{
+    flex:1; background:transparent; border:none; outline:none; color:var(--text); font-size:14.5px; resize:none; max-height:160px; padding:8px 0; font-family:inherit;
+  }
+  #composer textarea::placeholder{color:var(--muted);}
+  .send-btn{
+    width:38px; height:38px; border-radius:11px; border:none; background:var(--text); color:var(--bg); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+  .send-btn:disabled{opacity:.35; cursor:default;}
+  .composer-note{max-width:760px; margin:8px auto 0; font-size:11px; color:var(--muted); text-align:center; font-family:var(--mono);}
+  .composer-note.warn{color:var(--cloud);}
+
+  /* ---------- MODAL / DRAWER ---------- */
+  .overlay{position:fixed; inset:0; background:#000a; display:flex; align-items:center; justify-content:center; z-index:50;}
+  .overlay.hidden{display:none;}
+  .modal{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px; width:560px; max-width:92vw; max-height:86vh;
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .modal-head{padding:16px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;}
+  .modal-head h3{margin:0; font-size:15px; flex:1;}
+  .modal-body{padding:16px 18px; overflow-y:auto;}
+  .tabs{display:flex; gap:4px; padding:0 18px; border-bottom:1px solid var(--border);}
+  .tab{padding:10px 4px; margin-right:14px; font-size:13px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent;}
+  .tab.active{color:var(--text); border-color:var(--hybrid);}
+  .tabpane{display:none;}
+  .tabpane.active{display:block;}
+
+  .field-label{font-size:12px; color:var(--muted); margin:14px 0 6px; font-family:var(--mono);}
+  .field-label:first-child{margin-top:0;}
+  input[type=text], textarea.field, input[type=email]{
+    width:100%; background:var(--panel-2); border:1px solid var(--border); border-radius:9px; color:var(--text); padding:9px 11px; font-size:13.5px; outline:none; font-family:inherit;
+  }
+  .theme-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .theme-swatch{
+    width:64px; height:44px; border-radius:10px; border:2px solid var(--border); cursor:pointer; position:relative; overflow:hidden;
+  }
+  .theme-swatch.selected{border-color:var(--hybrid);}
+  .theme-swatch span{position:absolute; bottom:3px; left:5px; font-size:9px; font-family:var(--mono); color:#fff9;}
+
+  .model-card{border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px;}
+  .model-card-head{display:flex; align-items:center; gap:8px;}
+  .model-card-head b{font-size:13.5px; flex:1;}
+  .model-tag{font-family:var(--mono); font-size:10px; color:var(--muted); border:1px solid var(--border); padding:2px 6px; border-radius:100px;}
+  .model-desc{font-size:12px; color:var(--muted); margin:6px 0 10px;}
+  .progress-track{height:6px; background:var(--panel-2); border-radius:100px; overflow:hidden; margin:8px 0;}
+  .progress-fill{height:100%; background:var(--local); width:0%; transition:width .2s;}
+  .row-actions{display:flex; gap:8px;}
+  .btn{
+    border:1px solid var(--border); background:var(--panel-2); color:var(--text); padding:7px 12px; border-radius:9px; font-size:12.5px; cursor:pointer;
+  }
+  .btn:hover{border-color:var(--muted);}
+  .btn.primary{background:var(--local); color:#04211c; border:none; font-weight:700;}
+  .btn.danger{color:var(--danger); border-color:var(--danger); background:transparent;}
+  .btn.google{background:#fff; color:#1f1f1f; font-weight:600;}
+  .btn:disabled{opacity:.4; cursor:default;}
+
+  .char-card{border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px;}
+  .char-card-head{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+  .char-card-head input[type=text]{font-weight:700;}
+  .switch{width:36px; height:20px; border-radius:100px; background:var(--panel-2); border:1px solid var(--border); position:relative; cursor:pointer; flex:0 0 auto;}
+  .switch.on{background:var(--local-dim); border-color:var(--local);}
+  .switch::after{content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:var(--muted); top:2px; left:2px; transition:.15s;}
+  .switch.on::after{background:var(--local); left:18px;}
+  .hint{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.5;}
+
+  .profile-row{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+  .profile-name{font-weight:700; font-size:15px;}
+  .profile-email{font-size:12px; color:var(--muted);}
+  .stat-row{display:flex; gap:10px; margin:14px 0;}
+  .stat{flex:1; border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center;}
+  .stat b{font-size:18px; display:block;}
+  .stat span{font-size:10.5px; color:var(--muted); font-family:var(--mono);}
+
+  ::-webkit-scrollbar{width:8px; height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--border); border-radius:100px;}
+
+  /* ---------- MOBILE NAV (bottom bar) ---------- */
+  #mobile-nav{display:none; flex:0 0 auto; height:58px; border-top:1px solid var(--border); background:var(--panel);
+    align-items:center; justify-content:space-around;}
+  #mobile-nav button{background:none; border:none; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:2px; font-size:9.5px; font-family:var(--mono); cursor:pointer; flex:1; padding:6px 0;}
+  #mobile-nav button.active{color:var(--local);}
+  #mobile-nav svg{width:19px; height:19px;}
+  #sidebar-backdrop{display:none; position:fixed; inset:0; background:#000a; z-index:39;}
+
+  @media (max-width:760px){
+    #rail{display:none;}
+    #mobile-nav{display:flex;}
+    #sidebar{position:fixed; z-index:40; height:100%; top:0; left:0; margin-left:-100%; width:86vw; max-width:320px; transition:margin-left .2s ease;}
+    #sidebar.mobile-open{margin-left:0;}
+    #sidebar-backdrop.show{display:block;}
+    .sb-close-mobile{display:flex !important;}
+    #btn-toggle-sidebar{display:none;}
+  }
+  .sb-close-mobile{display:none; margin-left:auto;}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app">
+
+  <!-- ICON RAIL -->
+  <nav id="rail">
+    <button class="rail-btn active" data-rail="chat" title="Chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H7l-3 3V5z"/></svg>
+    </button>
+    <button class="rail-btn" data-rail="prompts" title="Pustaka Prompt / Karakter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M13 19c.3-2.2 2-3.6 4.3-3.6 2 0 3.7 1 3.7 3.6"/></svg>
+    </button>
+    <button class="rail-btn" data-rail="models" title="Model Lokal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg>
+    </button>
+    <div class="rail-spacer"></div>
+    <button class="rail-btn" data-rail="settings" title="Pengaturan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+    <button class="rail-btn" data-rail="profile" title="Profil">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+    </button>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sb-head" style="display:flex; align-items:flex-start; justify-content:space-between;">
+      <div>
+        <div class="sb-title">AI Hyper</div>
+        <div class="sb-sub" id="sb-route-hint">local-first · hybrid-ready</div>
+      </div>
+      <button class="icon-btn sb-close-mobile" id="btn-close-sidebar-mobile" title="Tutup">✕</button>
+    </div>
+    <input type="text" id="history-search" placeholder="Cari riwayat…" style="margin:10px 16px 0; width:calc(100% - 32px); background:var(--panel-2); border:1px solid var(--border); border-radius:9px; color:var(--text); padding:8px 10px; font-size:12.5px; outline:none;" />
+    <button class="sb-newchat" id="btn-new-chat">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Percakapan baru
+    </button>
+    <div class="sb-section-label">Space</div>
+    <div id="space-list" class="sb-list" style="flex:0 0 auto; max-height:140px;"></div>
+    <div class="sb-section-label">Riwayat</div>
+    <div id="history-list" class="sb-list"></div>
+    <div class="sb-foot" id="sb-foot">
+      <div class="avatar" id="sb-avatar">?</div>
+      <div class="sb-foot-txt">
+        <div class="sb-foot-name" id="sb-foot-name">Tamu (offline)</div>
+        <div class="sb-foot-vip" id="sb-foot-vip">0/4 pesan · reset 5 jam</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+    <div id="topbar">
+      <button class="icon-btn" id="btn-toggle-sidebar" title="Sembunyikan/Tampilkan panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+      </button>
+      <div class="space-name" id="topbar-space-name">Chat</div>
+      <div class="topbar-spacer"></div>
+      <div class="route-toggle" id="route-toggle">
+        <button data-mode="auto" class="active">Auto</button>
+        <button data-mode="local">Lokal</button>
+        <button data-mode="cloud">Cloud</button>
+        <button data-mode="privat">Privat</button>
+      </div>
+      <div class="pill off" id="route-pill"><span class="dot" style="background:var(--muted)"></span><span>menunggu input</span></div>
+      <div class="vip-badge" id="vip-badge">4 pesan tersisa</div>
+    </div>
+
+    <div id="chat">
+      <div class="chat-inner" id="chat-inner">
+        <div class="empty-state" id="empty-state">
+          <h2>Satu chat, banyak mesin.</h2>
+          <p>Ketik apa saja. Sistem akan memutuskan sendiri apakah cukup dijawab model lokal, perlu Cloud, atau gabungan (Hybrid) — sesuai kondisi perangkat, jaringan, dan isi pertanyaanmu. Tambahkan lebih dari satu karakter di <b>Pustaka Prompt</b> untuk mengaktifkan mode diskusi multi-agen.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="composer-wrap">
+      <div id="attach-preview" style="max-width:760px; margin:0 auto 8px; display:none;"></div>
+      <div id="composer">
+        <button class="icon-btn" id="btn-attach-file" title="Lampirkan berkas">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.5V7a2 2 0 00-2-2H8L4 9v8a2 2 0 002 2h6"/><path d="M14 21l6-6M14 21v-4a2 2 0 012-2h4"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-attach-image" title="Kirim gambar">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5-9 9"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-attach-video" title="Kirim video">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-insert-code" title="Sisipkan kode">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/></svg>
+        </button>
+        <input type="file" id="file-input" style="display:none" />
+        <textarea id="input" rows="1" placeholder="Tulis pesan… (Enter untuk kirim, Shift+Enter baris baru)"></textarea>
+        <button class="send-btn" id="btn-send" disabled>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="composer-note" id="composer-note">Jalur: Auto — router memilih Lokal/Cloud/Hybrid otomatis untuk tiap pesan.</div>
+    </div>
+  </main>
+</div>
+
+<div id="sidebar-backdrop"></div>
+
+<!-- MOBILE BOTTOM NAV — parity penuh dengan rail ikon desktop (Chat, Prompt, Model, Riwayat, Pengaturan, Profil) -->
+<nav id="mobile-nav">
+  <button data-mnav="chat" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H7l-3 3V5z"/></svg>
+    Chat
+  </button>
+  <button data-mnav="history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+    Riwayat
+  </button>
+  <button data-mnav="prompts">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.4"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M13 19c.3-2.2 2-3.6 4.3-3.6 2 0 3.7 1 3.7 3.6"/></svg>
+    Prompt
+  </button>
+  <button data-mnav="models">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9z"/></svg>
+    Model
+  </button>
+  <button data-mnav="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Setelan
+  </button>
+  <button data-mnav="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg>
+    Profil
+  </button>
+</nav>
+
+<!-- ================= MODAL: PROMPT LIBRARY / MULTI-AGENT ================= -->
+<div class="overlay hidden" id="modal-prompts">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Pustaka Prompt — Karakter</h3>
+      <button class="icon-btn" data-close="modal-prompts">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint" style="margin-top:0">Setiap prompt di sini adalah satu "sifat/karakter". <b>1 karakter aktif</b> = jawaban langsung seperti biasa. <b>2 karakter aktif atau lebih</b> = mode diskusi multi-agen otomatis menyala: tiap karakter aktif memberi pendapat, lalu sistem merangkumnya jadi satu jawaban akhir.</p>
+      <div id="char-list"></div>
+      <button class="btn" id="btn-add-char">+ Tambah karakter</button>
+      <div class="hint">Tidak ada batas jumlah karakter yang bisa kamu simpan. Aktifkan/nonaktifkan lewat sakelar di tiap kartu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: MODELS ================= -->
+<div class="overlay hidden" id="modal-models">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Model</h3>
+      <button class="icon-btn" data-close="modal-models">✕</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="local">Lokal</div>
+      <div class="tab" data-tab="cloud">Cloud</div>
+    </div>
+    <div class="modal-body">
+      <div class="tabpane active" id="tab-local">
+        <div id="local-model-list"></div>
+        <p class="hint">Model lokal diunduh <b>sekali</b> dan disimpan di penyimpanan browser (cache/IndexedDB). Setelah itu, akun manapun yang login di perangkat ini bisa memakainya tanpa unduh ulang. Model besar butuh RAM/VRAM besar dan WebGPU — kalau perangkatmu tidak kuat, gunakan model yang lebih kecil atau andalkan jalur Cloud.</p>
+      </div>
+      <div class="tabpane" id="tab-cloud">
+        <div class="field-label">Status koneksi Cloud (via Firebase Cloud Function)</div>
+        <div class="model-card">
+          <div class="model-card-head"><b id="cloud-status-title">Belum dikonfigurasi</b><span class="model-tag" id="cloud-status-tag">off</span></div>
+          <div class="model-desc" id="cloud-status-desc">Isi URL Cloud Function di bawah ini setelah kamu deploy backend (lihat FIREBASE_SETUP.md). Kunci API tetap tersimpan aman di server, tidak pernah dikirim ke browser.</div>
+          <div class="field-label">Cloud Function URL</div>
+          <input type="text" id="cloud-fn-url" placeholder="https://REGION-PROJECT.cloudfunctions.net/chatProxy" />
+          <div class="row-actions" style="margin-top:10px;">
+            <button class="btn primary" id="btn-save-cloud-url">Simpan</button>
+            <button class="btn" id="btn-test-cloud">Tes koneksi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: SETTINGS ================= -->
+<div class="overlay hidden" id="modal-settings">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Pengaturan</h3>
+      <button class="icon-btn" data-close="modal-settings">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-label">Tema</div>
+      <div class="theme-row" id="theme-row">
+        <div class="theme-swatch selected" data-theme="dark" style="background:linear-gradient(135deg,#0e0f13,#1b1e27)"><span>Dark</span></div>
+        <div class="theme-swatch" data-theme="midnight-blue" style="background:linear-gradient(135deg,#070b18,#111a34)"><span>Midnight</span></div>
+        <div class="theme-swatch" data-theme="graphite" style="background:linear-gradient(135deg,#1a1a1c,#2a2a2d)"><span>Graphite</span></div>
+        <div class="theme-swatch" data-theme="ink" style="background:linear-gradient(135deg,#000000,#141417)"><span>Ink</span></div>
+        <div class="theme-swatch" data-theme="sunset" style="background:linear-gradient(135deg,#1b1210,#2d1e19)"><span>Sunset</span></div>
+        <div class="theme-swatch" data-theme="violet" style="background:linear-gradient(135deg,#120f1c,#221c34)"><span>Violet</span></div>
+        <div class="theme-swatch" data-theme="paper" style="background:linear-gradient(135deg,#efe9dc,#f8f4ea)"><span>Paper</span></div>
+        <div class="theme-swatch" data-theme="light" style="background:linear-gradient(135deg,#ffffff,#e9e9e6)"><span>Light</span></div>
+      </div>
+
+      <div class="field-label">Gaya bahasa jawaban</div>
+      <select id="select-style" style="width:100%; background:var(--panel-2); border:1px solid var(--border); border-radius:9px; color:var(--text); padding:9px 11px; font-size:13.5px;">
+        <option value="netral">Netral</option>
+        <option value="santai">Santai</option>
+        <option value="formal">Formal</option>
+        <option value="ringkas">Ringkas</option>
+      </select>
+
+      <div class="field-label">Kebijakan routing</div>
+      <div class="hint" style="margin-top:0">Ini mengatur perilaku "Auto". Kamu tetap bisa override manual dari tombol Auto/Lokal/Cloud/Privat di atas kolom chat.</div>
+      <label style="display:flex; align-items:center; gap:8px; margin:10px 0; font-size:13px;">
+        <input type="checkbox" id="chk-privacy-first" checked/> Prioritaskan Lokal untuk topik pribadi/sensitif
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; margin:10px 0; font-size:13px;">
+        <input type="checkbox" id="chk-ask-before-cloud"/> Tanya dulu sebelum mengirim apa pun ke Cloud
+      </label>
+
+      <div class="field-label">Firebase</div>
+      <div class="hint" style="margin-top:0">Tempel konfigurasi Firebase project-mu (lihat FIREBASE_SETUP.md untuk cara membuatnya).</div>
+      <textarea class="field" id="firebase-config-input" rows="5" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","appId":"..."}'></textarea>
+      <div class="row-actions" style="margin-top:10px;">
+        <button class="btn primary" id="btn-save-firebase">Simpan konfigurasi</button>
+        <span class="model-tag" id="firebase-status-tag">belum diisi</span>
+      </div>
+
+      <div class="field-label">Data</div>
+      <div class="row-actions">
+        <button class="btn" id="btn-export-data">Ekspor riwayat</button>
+        <button class="btn danger" id="btn-clear-data">Hapus semua data lokal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: PROFILE ================= -->
+<div class="overlay hidden" id="modal-profile">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Profil</h3>
+      <button class="icon-btn" data-close="modal-profile">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-row">
+        <div class="avatar" id="profile-avatar" style="width:52px;height:52px;font-size:18px;">?</div>
+        <div>
+          <div class="profile-name" id="profile-name">Tamu</div>
+          <div class="profile-email" id="profile-email">Belum masuk akun</div>
+        </div>
+      </div>
+      <button class="btn google" id="btn-google-signin" style="width:100%;">Masuk dengan Google</button>
+      <button class="btn danger" id="btn-signout" style="width:100%; margin-top:8px; display:none;">Keluar</button>
+
+      <div class="stat-row">
+        <div class="stat"><b id="stat-used">0</b><span>PESAN TERPAKAI</span></div>
+        <div class="stat"><b id="stat-limit">4</b><span>BATAS / 5 JAM</span></div>
+        <div class="stat"><b id="stat-tier">FREE</b><span>STATUS</span></div>
+      </div>
+      <p class="hint">Akun VIP (tanpa batas) diverifikasi lewat backend Cloud Function + daftar VIP di Firestore/GitHub (lihat FIREBASE_SETUP.md). Email developer yang kamu daftarkan di konfigurasi backend otomatis tanpa batas.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* =========================================================================
+   AI HYPER — app.js (inline)
+   Struktur mengikuti blueprint: Input -> Sanitizer -> Intent -> Policy ->
+   Complexity -> Capability -> Context -> Routing Orchestrator -> Runtime
+   (Local / Cloud / Hybrid) -> Fallback -> Output -> Memory/Audit
+   ========================================================================= */
+
+// ---------- STORAGE HELPERS ----------
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null? d : JSON.parse(v);}catch(e){return d;} },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+// ---------- STATE ----------
+const state = {
+  theme: LS.get('theme', 'dark'),
+  sidebarCollapsed: false,
+  routeMode: 'auto', // auto | local | cloud | privat
+  spaces: LS.get('spaces', [{id:'default', name:'Umum'}]),
+  activeSpace: LS.get('activeSpace', 'default'),
+  threads: LS.get('threads', {}), // {spaceId: [{id,title,messages:[]}]}
+  activeThreadId: LS.get('activeThreadId', null),
+  characters: LS.get('characters', [
+    {id:'c1', name:'Asisten Umum', prompt:'Kamu adalah asisten AI yang jelas, ringkas, dan jujur.', active:true}
+  ]),
+  cloudFnUrl: LS.get('cloudFnUrl', ''),
+  firebaseConfig: LS.get('firebaseConfig', null),
+  usage: LS.get('usage', {count:0, windowStart: Date.now()}),
+  devUnlimitedEmails: LS.get('devUnlimitedEmails', []), // diisi via backend nanti; placeholder lokal
+  user: null,
+  localModelStatus: LS.get('localModelStatus', 'not-downloaded'), // not-downloaded | downloading | ready | error
+};
+
+const LIMIT_MSGS = 4;
+const LIMIT_WINDOW_MS = 5 * 60 * 60 * 1000; // 5 jam
+
+function saveAll(){
+  LS.set('theme', state.theme);
+  LS.set('spaces', state.spaces);
+  LS.set('activeSpace', state.activeSpace);
+  LS.set('threads', state.threads);
+  LS.set('activeThreadId', state.activeThreadId);
+  LS.set('characters', state.characters);
+  LS.set('cloudFnUrl', state.cloudFnUrl);
+  LS.set('firebaseConfig', state.firebaseConfig);
+  LS.set('usage', state.usage);
+  LS.set('localModelStatus', state.localModelStatus);
+}
+
+// ---------- MODEL REGISTRY (lokal) ----------
+const LOCAL_MODEL_REGISTRY = [
+  {
+    id: 'qwen2.5-1.5b-instruct-q4',
+    name: 'Qwen2.5 1.5B Instruct (q4)',
+    size: '~1.0 GB',
+    repo: 'onnx-community/Qwen2.5-1.5B-Instruct',
+    desc: 'Model serbaguna, seimbang antara kualitas & kebutuhan RAM. Rekomendasi default untuk laptop/HP menengah ke atas.',
+  },
+  {
+    id: 'qwen2.5-3b-instruct-q4',
+    name: 'Qwen2.5 3B Instruct (q4)',
+    size: '~1.9 GB',
+    repo: 'onnx-community/Qwen2.5-3B-Instruct',
+    desc: 'Lebih pintar dari versi 1.5B, tapi butuh RAM/VRAM lebih besar dan WebGPU. Cocok untuk perangkat kuat yang ingin kualitas lokal maksimal.',
+  },
+];
+
+// ---------- DOM SHORTCUTS ----------
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+
+// ================= THEME =================
+function applyTheme(t){
+  document.body.setAttribute('data-theme', t);
+  state.theme = t;
+  $$('.theme-swatch').forEach(sw => sw.classList.toggle('selected', sw.dataset.theme===t));
+  saveAll();
+}
+applyTheme(state.theme);
+
+// ================= SIDEBAR / RAIL =================
+$('#btn-toggle-sidebar').onclick = () => {
+  state.sidebarCollapsed = !state.sidebarCollapsed;
+  $('#sidebar').classList.toggle('collapsed', state.sidebarCollapsed);
+};
+
+// ---- Mobile sidebar drawer (hamburger equivalent: mobile-nav "Riwayat") ----
+function openMobileSidebar(){ $('#sidebar').classList.add('mobile-open'); $('#sidebar-backdrop').classList.add('show'); }
+function closeMobileSidebar(){ $('#sidebar').classList.remove('mobile-open'); $('#sidebar-backdrop').classList.remove('show'); }
+$('#btn-close-sidebar-mobile').onclick = closeMobileSidebar;
+$('#sidebar-backdrop').onclick = closeMobileSidebar;
+
+// ---- Mobile bottom nav: full parity with desktop rail ----
+$$('#mobile-nav button').forEach(btn => {
+  btn.onclick = () => {
+    $$('#mobile-nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.dataset.mnav;
+    closeMobileSidebar();
+    if(target==='chat'){ $('#input').focus(); }
+    else if(target==='history'){ openMobileSidebar(); }
+    else if(target==='prompts') openModal('modal-prompts');
+    else if(target==='models') openModal('modal-models');
+    else if(target==='settings') openModal('modal-settings');
+    else if(target==='profile') openModal('modal-profile');
+  };
+});
+
+// ---- History search filter ----
+$('#history-search').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  $$('#history-list .sb-item').forEach(item => {
+    item.style.display = item.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+  });
+});
+
+$$('.rail-btn[data-rail]').forEach(btn => {
+  btn.onclick = () => {
+    $$('.rail-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.dataset.rail;
+    if(target==='chat'){ /* just focus main */ $('#input').focus(); }
+    if(target==='prompts') openModal('modal-prompts');
+    if(target==='models') openModal('modal-models');
+    if(target==='settings') openModal('modal-settings');
+    if(target==='profile') openModal('modal-profile');
+  };
+});
+
+function openModal(id){ $('#'+id).classList.remove('hidden'); if(id==='modal-prompts') renderCharacterList(); if(id==='modal-models') renderLocalModelList(); }
+function closeModal(id){ $('#'+id).classList.add('hidden'); }
+$$('[data-close]').forEach(b => b.onclick = () => closeModal(b.dataset.close));
+$$('.overlay').forEach(ov => ov.addEventListener('click', e => { if(e.target===ov) ov.classList.add('hidden'); }));
+
+// ================= SPACES / HISTORY =================
+function currentThreads(){
+  return state.threads[state.activeSpace] || (state.threads[state.activeSpace]=[]);
+}
+function renderSpaces(){
+  const el = $('#space-list'); el.innerHTML='';
+  state.spaces.forEach(sp => {
+    const div = document.createElement('div');
+    div.className = 'sb-item' + (sp.id===state.activeSpace?' active':'');
+    div.innerHTML = `<span class="dot" style="background:var(--hybrid)"></span><span>${escapeHtml(sp.name)}</span>`;
+    div.onclick = () => { state.activeSpace = sp.id; state.activeThreadId = null; saveAll(); renderSpaces(); renderHistory(); renderChat(); $('#topbar-space-name').textContent = sp.name; closeMobileSidebar(); };
+    el.appendChild(div);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.className = 'sb-item'; addBtn.style.color='var(--muted)';
+  addBtn.innerHTML = '<span>+ Space baru</span>';
+  addBtn.onclick = () => {
+    const name = prompt('Nama space (contoh: Riset, Coding, Trading)');
+    if(!name) return;
+    const id = 'sp_'+Date.now();
+    state.spaces.push({id, name});
+    state.activeSpace = id; saveAll(); renderSpaces(); renderHistory(); renderChat();
+  };
+  el.appendChild(addBtn);
+}
+function renderHistory(){
+  const el = $('#history-list'); el.innerHTML='';
+  const threads = currentThreads();
+  if(threads.length===0){ el.innerHTML = '<div class="sb-item" style="color:var(--muted)">Belum ada percakapan</div>'; return; }
+  threads.slice().reverse().forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'sb-item' + (t.id===state.activeThreadId?' active':'');
+    div.innerHTML = `<span class="dot" style="background:var(--local)"></span><span>${escapeHtml(t.title||'Percakapan baru')}</span>`;
+    div.onclick = () => { state.activeThreadId = t.id; saveAll(); renderHistory(); renderChat(); closeMobileSidebar(); };
+    el.appendChild(div);
+  });
+}
+$('#btn-new-chat').onclick = () => {
+  const threads = currentThreads();
+  const t = {id:'t_'+Date.now(), title:'Percakapan baru', messages:[]};
+  threads.push(t);
+  state.activeThreadId = t.id;
+  saveAll(); renderHistory(); renderChat(); closeMobileSidebar();
+};
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ================= CHARACTERS / MULTI-AGENT =================
+function activeCharacters(){ return state.characters.filter(c=>c.active); }
+
+function renderCharacterList(){
+  const el = $('#char-list'); el.innerHTML='';
+  state.characters.forEach(ch => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.innerHTML = `
+      <div class="char-card-head">
+        <input type="text" value="${escapeHtml(ch.name)}" data-field="name" />
+        <div class="switch ${ch.active?'on':''}" data-field="active" title="Aktifkan karakter ini"></div>
+        <button class="icon-btn" data-action="delete" title="Hapus">✕</button>
+      </div>
+      <textarea class="field" rows="3" data-field="prompt" placeholder="Deskripsikan sifat/peran karakter ini...">${escapeHtml(ch.prompt)}</textarea>
+    `;
+    card.querySelector('[data-field="name"]').oninput = e => { ch.name = e.target.value; saveAll(); };
+    card.querySelector('[data-field="prompt"]').oninput = e => { ch.prompt = e.target.value; saveAll(); };
+    card.querySelector('[data-field="active"]').onclick = (e) => { ch.active = !ch.active; e.target.classList.toggle('on', ch.active); saveAll(); updateRouteHint(); };
+    card.querySelector('[data-action="delete"]').onclick = () => {
+      state.characters = state.characters.filter(c=>c.id!==ch.id);
+      saveAll(); renderCharacterList(); updateRouteHint();
+    };
+    el.appendChild(card);
+  });
+}
+$('#btn-add-char').onclick = () => {
+  state.characters.push({id:'c_'+Date.now(), name:'Karakter baru', prompt:'', active:true});
+  saveAll(); renderCharacterList(); updateRouteHint();
+};
+function updateRouteHint(){
+  const n = activeCharacters().length;
+  $('#sb-route-hint').textContent = n>=2 ? `mode diskusi · ${n} karakter aktif` : 'local-first · hybrid-ready';
+}
+updateRouteHint();
+
+// ================= ROUTE TOGGLE (Auto/Lokal/Cloud/Privat) =================
+$$('#route-toggle button').forEach(btn => {
+  btn.onclick = () => {
+    $$('#route-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.routeMode = btn.dataset.mode;
+    const notes = {
+      auto: 'Jalur: Auto — router memilih Lokal/Cloud/Hybrid otomatis untuk tiap pesan.',
+      local: 'Jalur: Lokal — semua pesan dipaksa memakai model lokal (offline-aman).',
+      cloud: 'Jalur: Cloud — memakai model cloud lewat backend (butuh internet & backend aktif).',
+      privat: 'Jalur: Privat — dipaksa lokal, tidak ada data yang dikirim ke luar perangkat.',
+    };
+    $('#composer-note').textContent = notes[state.routeMode];
+    $('#composer-note').classList.toggle('warn', state.routeMode==='cloud');
+  };
+});
+
+// ================= ROUTING ORCHESTRATOR =================
+// Mengikuti diagram: Policy Engine, Complexity Estimator, Capability Detector -> keputusan Lokal/Cloud/Hybrid
+function analyzeInput(text){
+  const lower = text.toLowerCase();
+  const needsRealtime = /(berita|terbaru|hari ini|sekarang|harga|kurs|cuaca|skor|jadwal)/.test(lower);
+  const needsWeb = needsRealtime || /(cari|search|sumber|referensi|link|website)/.test(lower);
+  const isCode = /(```|function |class |import |code|kode|bug|error|refactor)/i.test(text);
+  const isLong = text.length > 600;
+  const isSensitive = /(pribadi|rahasia|diary|curhat|password|nik|rekening)/.test(lower);
+  let complexity = 'simple';
+  if(isLong || isCode) complexity = 'medium';
+  if((isLong && isCode) || (needsWeb && isCode)) complexity = 'heavy';
+  return {needsWeb, isCode, isLong, isSensitive, complexity};
+}
+
+function decideRoute(text){
+  const online = navigator.onLine;
+  const analysis = analyzeInput(text);
+
+  if(state.routeMode==='privat') return {route:'local', reason:['mode Privat dipaksa oleh pengguna']};
+  if(state.routeMode==='local') return {route:'local', reason:['mode Lokal dipaksa oleh pengguna']};
+  if(state.routeMode==='cloud'){
+    if(!online) return {route:'local', reason:['mode Cloud diminta, tapi perangkat offline — fallback ke Lokal']};
+    return {route:'cloud', reason:['mode Cloud dipaksa oleh pengguna']};
+  }
+
+  // AUTO
+  if(!online) return {route:'local', reason:['perangkat offline']};
+  if(analysis.isSensitive) return {route:'local', reason:['terindikasi data pribadi/sensitif']};
+  if(analysis.needsWeb) return {route: (analysis.isCode? 'hybrid':'cloud'), reason:['butuh info real-time / pencarian web']};
+  if(analysis.complexity==='heavy') return {route:'hybrid', reason:['tugas kompleks: gabungan pemrosesan lokal + cloud']};
+  if(analysis.complexity==='medium' && state.localModelStatus!=='ready') return {route:'cloud', reason:['tugas sedang, model lokal belum siap di perangkat ini']};
+  return {route:'local', reason:['tugas ringan, cukup ditangani model lokal']};
+}
+
+function setRoutePill(route){
+  const pill = $('#route-pill');
+  pill.className = 'pill ' + route;
+  const labels = {local:'Lokal', cloud:'Cloud', hybrid:'Hybrid'};
+  const colors = {local:'var(--local)', cloud:'var(--cloud)', hybrid:'var(--hybrid)'};
+  pill.innerHTML = `<span class="dot" style="background:${colors[route]}"></span><span>${labels[route]}</span>`;
+}
+
+// ================= USAGE / VIP LIMIT =================
+function refreshUsageWindow(){
+  if(Date.now() - state.usage.windowStart > LIMIT_WINDOW_MS){
+    state.usage = {count:0, windowStart: Date.now()};
+    saveAll();
+  }
+}
+function isUnlimited(){
+  if(!state.user) return false;
+  return state.devUnlimitedEmails.includes(state.user.email) || state.user.vip===true;
+}
+function canSendMessage(){
+  refreshUsageWindow();
+  if(isUnlimited()) return true;
+  return state.usage.count < LIMIT_MSGS;
+}
+function registerMessageSent(){
+  if(isUnlimited()) return;
+  state.usage.count++;
+  saveAll();
+}
+function updateUsageUI(){
+  refreshUsageWindow();
+  const remain = Math.max(0, LIMIT_MSGS - state.usage.count);
+  const badge = $('#vip-badge');
+  if(isUnlimited()){
+    badge.textContent = state.user?.email && state.devUnlimitedEmails.includes(state.user.email) ? 'Developer · tanpa batas' : 'VIP · tanpa batas';
+    badge.classList.add('vip');
+  } else {
+    badge.textContent = `${remain} pesan tersisa`;
+    badge.classList.remove('vip');
+  }
+  $('#sb-foot-vip').textContent = isUnlimited() ? 'Tanpa batas' : `${state.usage.count}/${LIMIT_MSGS} pesan · reset 5 jam`;
+  $('#stat-used').textContent = state.usage.count;
+  $('#stat-limit').textContent = isUnlimited() ? '∞' : LIMIT_MSGS;
+  $('#stat-tier').textContent = isUnlimited() ? 'VIP' : 'FREE';
+}
+
+// ================= CHAT RENDER =================
+function activeThread(){
+  const threads = currentThreads();
+  let t = threads.find(t=>t.id===state.activeThreadId);
+  if(!t){ t = {id:'t_'+Date.now(), title:'Percakapan baru', messages:[]}; threads.push(t); state.activeThreadId = t.id; }
+  return t;
+}
+function renderChat(){
+  const inner = $('#chat-inner');
+  const t = activeThread();
+  if(t.messages.length===0){
+    inner.innerHTML = '';
+    inner.appendChild($('#empty-state').cloneNode(true));
+    return;
+  }
+  inner.innerHTML = '';
+  t.messages.forEach(m => inner.appendChild(renderMessage(m)));
+  $('#chat').scrollTop = $('#chat').scrollHeight;
+}
+function renderMessage(m){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (m.role==='user'?'user':'ai');
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + (m.role==='user'?'user':'ai');
+  avatar.textContent = m.role==='user' ? (state.user?.name?.[0]||'A') : 'AI';
+
+  const bubbleWrap = document.createElement('div');
+  bubbleWrap.className = 'bubble-wrap';
+
+  if(m.discussion && m.discussion.length){
+    const det = document.createElement('details');
+    det.className = 'discussion';
+    const sum = document.createElement('summary');
+    sum.innerHTML = `💬 Diskusi ${m.discussion.length} karakter — lihat pendapat masing-masing`;
+    det.appendChild(sum);
+    m.discussion.forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'agent-turn';
+      div.innerHTML = `<div class="agent-name" style="color:var(--hybrid)">${escapeHtml(d.name)}</div><div class="agent-text">${escapeHtml(d.text)}</div>`;
+      det.appendChild(div);
+    });
+    bubbleWrap.appendChild(det);
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = m.text;
+  bubbleWrap.appendChild(bubble);
+
+  if(m.role!=='user'){
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    const colors = {local:'var(--local)', cloud:'var(--cloud)', hybrid:'var(--hybrid)'};
+    meta.innerHTML = `<span style="color:${colors[m.route]||'var(--muted)'}">● ${m.route||''}</span><span>${m.reason||''}</span>`;
+    bubbleWrap.appendChild(meta);
+  }
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubbleWrap);
+  return wrap;
+}
+
+// ================= COMPOSER =================
+const input = $('#input');
+input.addEventListener('input', () => {
+  input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 160)+'px';
+  $('#btn-send').disabled = input.value.trim().length===0;
+});
+input.addEventListener('keydown', e => {
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); trySend(); }
+});
+$('#btn-send').onclick = trySend;
+
+// ================= LAMPIRAN (file / gambar / video) =================
+let pendingAttachment = null;
+function showAttachPreview(){
+  const wrap = $('#attach-preview');
+  if(!pendingAttachment){ wrap.style.display='none'; wrap.innerHTML=''; return; }
+  wrap.style.display='flex';
+  wrap.style.alignItems='center';
+  wrap.style.gap='8px';
+  wrap.innerHTML = `<span class="model-tag">${pendingAttachment.kind}</span><span style="font-size:12px;color:var(--muted)">${escapeHtml(pendingAttachment.name)}</span><button class="icon-btn" id="btn-remove-attach" style="width:22px;height:22px;">✕</button>`;
+  $('#btn-remove-attach').onclick = () => { pendingAttachment = null; showAttachPreview(); };
+}
+function pickFile(accept, kind){
+  const fi = $('#file-input');
+  fi.value = '';
+  fi.accept = accept;
+  fi.onchange = () => {
+    const f = fi.files[0];
+    if(!f) return;
+    pendingAttachment = {kind, name: f.name, size: f.size};
+    showAttachPreview();
+  };
+  fi.click();
+}
+$('#btn-attach-file').onclick = () => pickFile('*/*', 'berkas');
+$('#btn-attach-image').onclick = () => pickFile('image/*', 'gambar');
+$('#btn-attach-video').onclick = () => pickFile('video/*', 'video');
+$('#btn-insert-code').onclick = () => {
+  const start = input.selectionStart, end = input.selectionEnd;
+  const sel = input.value.slice(start, end) || 'kode di sini';
+  const before = input.value.slice(0, start), after = input.value.slice(end);
+  input.value = `${before}\`\`\`\n${sel}\n\`\`\`${after}`;
+  input.dispatchEvent(new Event('input'));
+  input.focus();
+};
+
+async function trySend(){
+  let text = input.value.trim();
+  if(!text && !pendingAttachment) return;
+  if(!canSendMessage()){
+    alert('Batas 4 pesan / 5 jam tercapai. Masuk dengan akun VIP, atau tunggu reset jendela waktu. (Lihat Profil untuk status.)');
+    return;
+  }
+  let attachmentNote = '';
+  if(pendingAttachment){
+    attachmentNote = ` [lampiran ${pendingAttachment.kind}: ${pendingAttachment.name}]`;
+    if(!text) text = `Tolong analisis lampiran ${pendingAttachment.kind} ini: ${pendingAttachment.name}`;
+  }
+  const displayText = text + attachmentNote;
+  input.value=''; input.style.height='auto'; $('#btn-send').disabled = true;
+  const hadImageOrVideo = pendingAttachment && (pendingAttachment.kind==='gambar' || pendingAttachment.kind==='video');
+  pendingAttachment = null; showAttachPreview();
+
+  const t = activeThread();
+  if(t.messages.length===0) t.title = text.slice(0,40);
+  t.messages.push({role:'user', text: displayText});
+  saveAll(); renderChat(); renderHistory();
+
+  const decision = decideRoute(text);
+  if(hadImageOrVideo && decision.route!=='cloud' && decision.route!=='hybrid'){
+    decision.route = state.cloudFnUrl ? 'cloud' : decision.route;
+    decision.reason.push('lampiran media butuh kemampuan visual (idealnya Cloud)');
+  }
+  setRoutePill(decision.route);
+  registerMessageSent();
+  updateUsageUI();
+
+  const chars = activeCharacters();
+  let resultMsg;
+  if(hadImageOrVideo && !state.cloudFnUrl){
+    resultMsg = {role:'ai', text: `[Pemberitahuan: perlu koneksi internet & backend Cloud] Membaca isi ${pendingAttachment?.kind||'media'} butuh kemampuan visual yang belum tersedia di jalur Lokal saat ini, dan jalur Cloud belum dikonfigurasi (lihat Model → Cloud). Aku tetap bisa membantu lewat teks yang kamu jelaskan sendiri.`, route:'local', reason:'fallback: cloud belum dikonfigurasi'};
+  } else if(chars.length >= 2){
+    resultMsg = await runMultiAgent(text, decision, chars);
+  } else {
+    const styleNote = {netral:'', santai:' Gunakan gaya bahasa santai dan akrab.', formal:' Gunakan gaya bahasa formal dan sopan.', ringkas:' Jawab seringkas mungkin, langsung ke inti.'}[LS.get('styleTone','netral')];
+    const persona = (chars[0]?.prompt || 'Kamu adalah asisten AI yang jelas dan jujur.') + styleNote;
+    const answer = await runInference(text, decision.route, persona);
+    resultMsg = {role:'ai', text: answer, route: decision.route, reason: decision.reason.join('; ')};
+  }
+  t.messages.push(resultMsg);
+  saveAll(); renderChat();
+}
+
+async function runMultiAgent(text, decision, chars){
+  const discussion = [];
+  for(const ch of chars){
+    const reply = await runInference(text, decision.route, ch.prompt, discussion);
+    discussion.push({name: ch.name, text: reply});
+  }
+  const synthesisPrompt = `Berikut pendapat beberapa karakter terhadap pertanyaan pengguna: "${text}".\n` +
+    discussion.map(d=>`- ${d.name}: ${d.text}`).join('\n') +
+    `\nRangkum menjadi satu jawaban akhir yang koheren dan berguna untuk pengguna.`;
+  const finalAnswer = await runInference(synthesisPrompt, decision.route, 'Kamu adalah penyintesis yang merangkum diskusi beberapa karakter menjadi satu jawaban final yang jelas.');
+  return {role:'ai', text: finalAnswer, route: decision.route, reason: decision.reason.join('; '), discussion};
+}
+
+// ================= INFERENCE RUNTIME =================
+// LOCAL: transformers.js (WebGPU) — diisi oleh model-runtime.js (lihat loadLocalPipeline)
+// CLOUD: fetch ke Cloud Function proxy milik pengguna sendiri (lihat FIREBASE_SETUP.md)
+let localPipeline = null;
+
+async function runInference(text, route, systemPrompt, priorDiscussion){
+  try{
+    if(route==='local' || route==='hybrid'){
+      if(state.localModelStatus!=='ready'){
+        return fallbackNotice('local-not-ready', text);
+      }
+      return await runLocalInference(text, systemPrompt);
+    }
+    if(route==='cloud'){
+      if(!state.cloudFnUrl){
+        return fallbackNotice('cloud-not-configured', text);
+      }
+      return await runCloudInference(text, systemPrompt);
+    }
+  }catch(err){
+    console.error(err);
+    return `[Pemberitahuan] Terjadi kendala saat memproses (${route}): ${err.message}. Sistem mencoba fallback otomatis pada pesan berikutnya.`;
+  }
+}
+
+function fallbackNotice(kind, text){
+  if(kind==='local-not-ready'){
+    return `[Pemberitahuan: perlu koneksi internet] Model lokal belum diunduh di perangkat ini. Buka menu "Model Lokal" untuk mengunduhnya sekali saja (offline setelah itu), atau ganti jalur ke Cloud/Auto. Untuk sementara aku tidak bisa memproses: "${text.slice(0,80)}..."`;
+  }
+  if(kind==='cloud-not-configured'){
+    return `[Pemberitahuan] Jalur Cloud belum terhubung ke backend. Ikuti FIREBASE_SETUP.md untuk deploy Cloud Function, lalu isi URL-nya di menu Model → Cloud.`;
+  }
+  return '[Pemberitahuan] Tidak dapat memproses permintaan saat ini.';
+}
+
+async function runLocalInference(text, systemPrompt){
+  if(!localPipeline) throw new Error('pipeline lokal belum dimuat');
+  const messages = [
+    {role:'system', content: systemPrompt},
+    {role:'user', content: text}
+  ];
+  const output = await localPipeline(messages, {max_new_tokens: 512, temperature: 0.7});
+  const gen = output?.[0]?.generated_text;
+  if(Array.isArray(gen)) return gen[gen.length-1]?.content || JSON.stringify(gen);
+  return String(gen || '');
+}
+
+async function runCloudInference(text, systemPrompt){
+  const idToken = state.user?.idToken || null;
+  const res = await fetch(state.cloudFnUrl, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      message: text,
+      systemPrompt,
+      uid: state.user?.uid || 'anonymous',
+      idToken,
+    })
+  });
+  if(!res.ok){
+    const errText = await res.text().catch(()=> '');
+    throw new Error(`Cloud Function merespons ${res.status}: ${errText.slice(0,150)}`);
+  }
+  const data = await res.json();
+  if(data.error) throw new Error(data.error);
+  return data.reply || '[Cloud tidak mengembalikan jawaban]';
+}
+
+// ================= LOCAL MODEL MANAGER =================
+function renderLocalModelList(){
+  const el = $('#local-model-list'); el.innerHTML='';
+  LOCAL_MODEL_REGISTRY.forEach(m => {
+    const isSelected = LS.get('selectedLocalModel', LOCAL_MODEL_REGISTRY[0].id) === m.id;
+    const status = isSelected ? state.localModelStatus : 'not-downloaded';
+    const card = document.createElement('div');
+    card.className = 'model-card';
+    card.innerHTML = `
+      <div class="model-card-head"><b>${m.name}</b><span class="model-tag">${m.size}</span></div>
+      <div class="model-desc">${m.desc}</div>
+      <div class="progress-track" style="display:${status==='downloading'?'block':'none'}"><div class="progress-fill" id="progress-${m.id}"></div></div>
+      <div class="row-actions">
+        <button class="btn primary" data-action="download" ${status==='ready'?'disabled':''}>${status==='downloading'?'Mengunduh…':status==='ready'?'Sudah siap':'Unduh (sekali saja)'}</button>
+        <button class="btn" data-action="cancel" ${status!=='downloading'?'disabled':''}>Batal</button>
+        <button class="btn danger" data-action="delete" ${status!=='ready'?'disabled':''}>Hapus</button>
+      </div>
+    `;
+    card.querySelector('[data-action="download"]').onclick = () => startLocalDownload(m);
+    card.querySelector('[data-action="cancel"]').onclick = () => cancelLocalDownload(m);
+    card.querySelector('[data-action="delete"]').onclick = () => deleteLocalModel(m);
+    el.appendChild(card);
+  });
+}
+
+let downloadAbort = null;
+async function startLocalDownload(model){
+  LS.set('selectedLocalModel', model.id);
+  state.localModelStatus = 'downloading'; saveAll(); renderLocalModelList();
+  try{
+    const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0');
+    localPipeline = await pipeline('text-generation', model.repo, {
+      device: 'webgpu',
+      dtype: 'q4',
+      progress_callback: (p) => {
+        if(p.status==='progress'){
+          const pct = Math.round((p.progress||0));
+          const bar = document.getElementById('progress-'+model.id);
+          if(bar) bar.style.width = pct+'%';
+        }
+      }
+    });
+    state.localModelStatus = 'ready'; saveAll(); renderLocalModelList(); updateRouteHint();
+  }catch(err){
+    console.error(err);
+    state.localModelStatus = 'error'; saveAll(); renderLocalModelList();
+    alert('Gagal mengunduh model lokal: ' + err.message + '\n\nCatatan: WebGPU + unduhan model besar butuh browser modern (Chrome/Edge terbaru) dan koneksi stabil saat unduhan pertama. Jika ini terjadi di dalam pratinjau/sandbox, coba jalankan file ini setelah di-deploy ke domain sendiri (Vercel/GitHub Pages).');
+  }
+}
+function cancelLocalDownload(model){
+  // transformers.js belum expose abort universal; solusi praktis: reload agar fetch cache terhenti.
+  state.localModelStatus = 'not-downloaded'; saveAll(); renderLocalModelList();
+  location.reload();
+}
+async function deleteLocalModel(model){
+  if(!confirm('Hapus model lokal ini dari penyimpanan perangkat?')) return;
+  try{
+    const keys = await caches.keys();
+    for(const k of keys){ if(k.includes('transformers')) await caches.delete(k); }
+  }catch(e){}
+  localPipeline = null;
+  state.localModelStatus = 'not-downloaded'; saveAll(); renderLocalModelList(); updateRouteHint();
+}
+
+// ================= CLOUD CONFIG UI =================
+$('#cloud-fn-url').value = state.cloudFnUrl;
+$('#btn-save-cloud-url').onclick = () => {
+  state.cloudFnUrl = $('#cloud-fn-url').value.trim();
+  saveAll();
+  refreshCloudStatusUI();
+};
+$('#btn-test-cloud').onclick = async () => {
+  if(!state.cloudFnUrl) return alert('Isi URL Cloud Function dulu.');
+  try{
+    const res = await fetch(state.cloudFnUrl, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:'ping', systemPrompt:'ping', uid:'test'})});
+    alert(res.ok ? 'Terhubung! Backend merespons.' : `Backend merespons dengan status ${res.status}.`);
+  }catch(e){ alert('Tidak bisa menghubungi backend: '+e.message); }
+};
+function refreshCloudStatusUI(){
+  const configured = !!state.cloudFnUrl;
+  $('#cloud-status-title').textContent = configured ? 'Terhubung ke backend' : 'Belum dikonfigurasi';
+  $('#cloud-status-tag').textContent = configured ? 'siap' : 'off';
+  $('#cloud-status-desc').textContent = configured
+    ? 'Pesan yang dirutekan ke Cloud akan dikirim ke Cloud Function ini. Pastikan kamu sudah mengisi API key LLM di server (Functions config), bukan di browser.'
+    : 'Isi URL Cloud Function di bawah ini setelah kamu deploy backend (lihat FIREBASE_SETUP.md).';
+}
+refreshCloudStatusUI();
+
+// ================= SETTINGS MODAL WIRING =================
+$$('.theme-swatch').forEach(sw => sw.onclick = () => applyTheme(sw.dataset.theme));
+$('#select-style').value = LS.get('styleTone', 'netral');
+$('#select-style').onchange = (e) => LS.set('styleTone', e.target.value);
+$('#btn-export-data').onclick = () => {
+  const blob = new Blob([JSON.stringify(state.threads, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ai-hyper-riwayat.json'; a.click();
+};
+$('#btn-clear-data').onclick = () => {
+  if(confirm('Hapus semua riwayat, karakter, dan pengaturan di perangkat ini?')){
+    localStorage.clear(); location.reload();
+  }
+};
+$('#firebase-config-input').value = state.firebaseConfig ? JSON.stringify(state.firebaseConfig) : '';
+$('#btn-save-firebase').onclick = () => {
+  try{
+    const cfg = JSON.parse($('#firebase-config-input').value);
+    state.firebaseConfig = cfg; saveAll();
+    $('#firebase-status-tag').textContent = 'tersimpan — muat ulang halaman';
+    initFirebaseIfConfigured();
+  }catch(e){ alert('Format JSON tidak valid.'); }
+};
+if(state.firebaseConfig) $('#firebase-status-tag').textContent = 'tersimpan';
+
+// ================= FIREBASE (opsional, aktif jika dikonfigurasi) =================
+let firebaseAuth = null;
+async function initFirebaseIfConfigured(){
+  if(!state.firebaseConfig) return;
+  try{
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    const app = initializeApp(state.firebaseConfig);
+    firebaseAuth = getAuth(app);
+    onAuthStateChanged(firebaseAuth, async (fbUser) => {
+      if(fbUser){
+        const idToken = await fbUser.getIdToken();
+        state.user = {uid: fbUser.uid, name: fbUser.displayName, email: fbUser.email, photo: fbUser.photoURL, idToken};
+      } else {
+        state.user = null;
+      }
+      renderProfileUI();
+      updateUsageUI();
+    });
+    $('#btn-google-signin').onclick = async () => {
+      try{ await signInWithPopup(firebaseAuth, new GoogleAuthProvider()); }
+      catch(e){ alert('Gagal masuk: '+e.message); }
+    };
+    $('#btn-signout').onclick = () => signOut(firebaseAuth);
+  }catch(e){
+    console.error('Firebase init gagal', e);
+  }
+}
+$('#btn-google-signin').onclick = () => alert('Firebase belum dikonfigurasi. Buka Pengaturan → tempel konfigurasi Firebase-mu dulu (lihat FIREBASE_SETUP.md).');
+
+function renderProfileUI(){
+  const signed = !!state.user;
+  $('#profile-name').textContent = signed ? state.user.name || state.user.email : 'Tamu';
+  $('#profile-email').textContent = signed ? state.user.email : 'Belum masuk akun';
+  $('#profile-avatar').textContent = signed ? (state.user.name?.[0]||state.user.email[0]).toUpperCase() : '?';
+  $('#sb-avatar').textContent = signed ? (state.user.name?.[0]||state.user.email[0]).toUpperCase() : '?';
+  $('#sb-foot-name').textContent = signed ? (state.user.name||state.user.email) : 'Tamu (offline)';
+  $('#btn-google-signin').style.display = signed ? 'none' : 'block';
+  $('#btn-signout').style.display = signed ? 'block' : 'none';
+}
+
+// ================= INIT =================
+window.addEventListener('online', () => $('#composer-note').textContent += ' (kembali online)');
+window.addEventListener('offline', () => { $('#composer-note').textContent = 'Offline — semua pesan otomatis memakai jalur Lokal.'; });
+
+renderSpaces();
+renderHistory();
+renderChat();
+updateUsageUI();
+renderProfileUI();
+initFirebaseIfConfigured();
+$('#topbar-space-name').textContent = state.spaces.find(s=>s.id===state.activeSpace)?.name || 'Chat';
+</script>
+</body>
+</html>
