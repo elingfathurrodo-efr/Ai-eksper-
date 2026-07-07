@@ -1,0 +1,74 @@
+/* ==========================================================
+   AI HYPER — design tokens
+   Signature idea: color = provenance. Every answer, badge and
+   pill is tinted by where it came from — local (teal), cloud
+   (violet), hybrid (amber gradient) — so the hybrid-routing
+   thesis of the product is visible everywhere, not explained.
+   ========================================================== */
+
+:root{
+  /* base surfaces */
+  --bg:            #0B0E14;
+  --bg-1:          #10141C;
+  --panel:         #12161F;
+  --panel-2:       #171C27;
+  --border:        #232936;
+  --border-soft:   #1A2029;
+
+  /* text */
+  --text:          #E9ECF2;
+  --text-dim:      #ADB5C4;
+  --text-mute:     #6E7789;
+
+  /* signature accent — used sparingly (send button glow, active route ring) */
+  --signature:      #E8A33D;
+  --signature-soft: #3A2C16;
+
+  /* provenance colors */
+  --local:        #3FB6A8;
+  --local-soft:   #102A27;
+  --cloud:        #9B8CF2;
+  --cloud-soft:   #211B3A;
+  --hybrid-a:     #E8A33D;
+  --hybrid-b:     #9B8CF2;
+
+  /* status */
+  --danger:       #E2725B;
+  --danger-soft:  #331B17;
+  --success:      #4FBE84;
+
+  /* typography */
+  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-body:    'Inter', -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* radii & spacing */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+
+  --rail-w: 64px;
+  --sidebar-w: 280px;
+
+  --shadow-1: 0 8px 24px rgba(0,0,0,.35);
+  --shadow-2: 0 2px 8px rgba(0,0,0,.25);
+}
+
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior:none;
+}
+button, input, textarea{ font-family:inherit; color:inherit; }
+button{ cursor:pointer; background:none; border:none; }
+::selection{ background:var(--signature-soft); color:var(--text); }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
